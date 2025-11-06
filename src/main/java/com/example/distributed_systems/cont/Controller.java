@@ -1,11 +1,6 @@
-package com.example.distributedkv.controller;
+package com.example.distributed_systems.cont;
+import com.example.distributed_systems.dto.HeartbeatRequest;
 
-import com.example.distributedkv.common.dto.HeartbeatRequest;
-import com.example.distributedkv.common.dto.RouteResponse;
-import com.example.distributedkv.common.dto.WorkerRegisterRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,21 +11,24 @@ public class Controller {
     @Autowired
     private ControllerService controllerService;
 
-    @PostMapping("/register")
-    public ResponseEntity<Void> registerWorker(@RequestBody WorkerRegisterRequest req) {
-        controllerService.registerWorker(req);
-        return ResponseEntity.ok().build();
+     @PostMapping("/register")
+    public String registerWorker(@RequestParam String id,
+                                 @RequestParam String host,
+                                 @RequestParam int port) {
+        controllerService.registerWorker(id, host, port);
+        return "Worker registered: " + id;
     }
+
 
     @PostMapping("/heartbeat")
     public ResponseEntity<Void> heartbeat(@RequestBody HeartbeatRequest req) {
-        controllerService.receiveHeartbeat(req);
-        return ResponseEntity.ok().build();
+      controllerService.updateHeartbeat(req.getId());
+        return new HeartbeatResponse(true, "Heartbeat received for " + req.getId());
     }
 
-    @GetMapping("/route/{key}")
-    public ResponseEntity<RouteResponse> routeForKey(@PathVariable String key) {
-        RouteResponse resp = controllerService.routeForKey(key);
+    @GetMapping("/key-mapping/{key}")
+    public ResponseEntity<RouteResponse> getKeyMapping(@PathVariable String key) {
+        RouteResponse resp = controllerService.getKeyMapping(key);
         return ResponseEntity.ok(resp);
     }
 
