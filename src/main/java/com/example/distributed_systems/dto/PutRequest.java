@@ -5,6 +5,11 @@ public class PutRequest {
     private String key;
     private String value;
 
+
+    public PutRequest(){
+        
+    }
+
     public PutRequest(String key, String value) {
         this.key = key;
         this.value = value;

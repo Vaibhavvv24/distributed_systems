@@ -1,0 +1,100 @@
+package com.example.distributed_systems.service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.example.distributed_systems.dto.RouteResponse;
+import com.example.distributed_systems.dto.WorkerInfo;
+
+import jakarta.annotation.PostConstruct;
+
+@Service
+public class ControllerService {
+
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private final Map<String, WorkerInfo> workers = new ConcurrentHashMap<>();
+    private final List<WorkerInfo> workerList = Collections.synchronizedList(new ArrayList<>());
+    private static final int REPLICATION_FACTOR = 3;
+    private static final long HEARTBEAT_TIMEOUT_MS = 10000; // 10 seconds
+
+     @PostConstruct
+    public void startHeartbeatChecker() {
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            for (WorkerInfo w : workers.values()) {
+                if (now - w.getLastHeartbeat() > HEARTBEAT_TIMEOUT_MS) {
+                    w.setAlive(false);
+                    System.err.println("❌ Worker marked dead: " + w.getId());
+                }
+            }
+        }, 5, 5, TimeUnit.SECONDS); // check every 5 seconds
+    }
+
+    // Register worker
+    public synchronized void registerWorker(String id, String host, int port) {
+        if (workers.containsKey(id)) {
+            WorkerInfo existing = workers.get(id);
+            existing.setHost(host);
+            existing.setPort(port);
+            existing.setAlive(true);
+        } else {
+            WorkerInfo info = new WorkerInfo(id, host, port, true,System.currentTimeMillis());
+            workers.put(id, info);
+            workerList.add(info);
+        }
+    }
+
+    // Get mapping of a key to primary + replicas
+    public RouteResponse getKeyMapping(String key) {
+        if (workerList.isEmpty()) {
+            throw new IllegalStateException("No workers available");
+        }
+
+        List<WorkerInfo> snapshot;
+        synchronized (workerList) {
+            snapshot = new ArrayList<>(workerList);
+        }
+
+        int hash = Math.abs(key.hashCode());
+        int primaryIndex = hash % snapshot.size();
+
+        WorkerInfo primary = snapshot.get(primaryIndex);
+
+        List<WorkerInfo> replicas = new ArrayList<>();
+        for (int i = 1; i < REPLICATION_FACTOR; i++) {
+            replicas.add(snapshot.get((primaryIndex + i) % snapshot.size()));
+        }
+
+        return new RouteResponse(key, primary, replicas);
+    }
+
+    // Handle worker heartbeat
+    public void updateHeartbeat(String workerId) {
+        WorkerInfo worker = workers.get(workerId);
+        if (worker != null) {
+            worker.setAlive(true);
+            worker.setLastHeartbeat(System.currentTimeMillis());
+        } else {
+            System.err.println("⚠️ Heartbeat from unknown worker: " + workerId);
+        }
+    }
+
+    // List all workers
+    public List<WorkerInfo> listWorkers() {
+        return new ArrayList<>(workers.values());
+    }
+
+    // Trigger re-replication (placeholder)
+    public void triggerReReplication() {
+        System.out.println("Re-replication triggered (not implemented yet)");
+    }
+}

@@ -1,6 +1,8 @@
 package com.example.distributed_systems.service;
 import com.example.distributed_systems.config.WorkerConfig;
 import com.example.distributed_systems.dto.KVRecord;
+import com.example.distributed_systems.dto.PutResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,23 +29,26 @@ public class WorkerService {
     @Autowired
     private WorkerConfig workerConfig;  // contains info about other workers
 
-    public boolean putKey(String key, String value) {
-        store.put(key, value); // store locally (primary)
+     public PutResponse put(String key, String value) {
+        // 1️⃣ Store locally (primary)
+        store.put(key, value);
         KVRecord record = new KVRecord(key, value);
 
         List<String> replicaUrls = workerConfig.getReplicaUrls(workerId);
 
-        int successCount = 1; // self success
+        int successCount = 1; // local write counts as success
+        StringBuilder log = new StringBuilder();
 
-        // --- Send to first replica (synchronous) ---
+        // 2️⃣ Send to first replica (synchronous)
         try {
             restTemplate.put(replicaUrls.get(0) + "/worker/replicate/" + key, record);
             successCount++;
+            log.append("Replica 1 written successfully. ");
         } catch (Exception e) {
-            System.err.println("Replica 1 write failed: " + e.getMessage());
+            log.append("Replica 1 write failed: ").append(e.getMessage()).append(". ");
         }
 
-        // --- Send to second replica (asynchronous) ---
+        // 3️⃣ Send to second replica (asynchronous)
         CompletableFuture.runAsync(() -> {
             try {
                 restTemplate.put(replicaUrls.get(1) + "/worker/replicate/" + key, record);
@@ -53,7 +58,8 @@ public class WorkerService {
             }
         });
 
-        return successCount >= 2;
+        boolean success = successCount >= 2;
+        return new PutResponse(key, success, log.toString());
     }
 
     public void storeReplica(String key, KVRecord record) {
@@ -61,7 +67,7 @@ public class WorkerService {
         System.out.println("Replica stored for key=" + key + " at worker=" + workerId);
     }
 
-    public String getKey(String key) {
+    public String get(String key) {
         return store.get(key);
     }
 }

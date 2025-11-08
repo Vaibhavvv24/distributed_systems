@@ -1,5 +1,5 @@
 
-
+package com.example.distributed_systems.dto;
 
 public class KVRecord{
 

@@ -1,13 +1,13 @@
-
+package com.example.distributed_systems.dto;
 import java.util.List;
 
 
 public class RouteResponse {
     private String key;
-    private String primary;
-    private List<String> replicas;
+    private WorkerInfo primary;
+    private List<WorkerInfo> replicas;
     // getters/setters/constructors
-    public RouteResponse(String key, String primary, List<String> replicas) {
+    public RouteResponse(String key, WorkerInfo primary, List<WorkerInfo> replicas) {
         this.key = key;
         this.primary = primary;
         this.replicas = replicas;
@@ -17,11 +17,11 @@ public class RouteResponse {
         return key;
     }
 
-    public String getPrimary() {
+    public WorkerInfo getPrimary() {
         return primary;
     }
 
-    public List<String> getReplicas() {
+    public List<WorkerInfo> getReplicas() {
         return replicas;
     }
 
@@ -29,11 +29,11 @@ public class RouteResponse {
         this.key = key;
     }
 
-    public void setPrimary(String primary) {
+    public void setPrimary(WorkerInfo primary) {
         this.primary = primary;
     }
 
-    public void setReplicas(List<String> replicas) {
+    public void setReplicas(List<WorkerInfo> replicas) {
         this.replicas = replicas;
     }
 }

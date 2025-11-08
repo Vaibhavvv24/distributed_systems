@@ -1,12 +1,14 @@
 
+package com.example.distributed_systems.dto;
 
-
-public class HeartbeatRequest {
+public class HeartBeatRequest {
     private String id;
    
 
-
-    public HeartbeatRequest(String id) {
+    public HeartBeatRequest(){
+        
+    }
+    public HeartBeatRequest(String id) {
         this.id = id;
        
     }
