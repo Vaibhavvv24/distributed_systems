@@ -25,10 +25,13 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/v1/worker")
 public class WorkerController {
 
-  
-
     @Autowired
     private WorkerService workerService;
+
+    @GetMapping("/status")
+    public String status() {
+        return "Worker is running";
+    }
 
     // Client GET: get value for key
     @GetMapping("/get")
