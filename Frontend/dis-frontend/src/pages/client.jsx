@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "";
 
-export default function ClientFrontend() {
+export default function Client() {
   const [putKey, setPutKey] = useState("");
   const [putValue, setPutValue] = useState("");
   const [putResult, setPutResult] = useState(null);
@@ -27,7 +27,7 @@ export default function ClientFrontend() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/v1/client/put`, {
+      const res = await fetch(`http://localhost:8082/v1/client/put`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: putKey.trim(), value: putValue }),
@@ -208,12 +208,12 @@ export default function ClientFrontend() {
           </section>
         </div>
 
-        <footer className="mt-6 text-sm text-slate-500">
+        {/* <footer className="mt-6 text-sm text-slate-500">
           <ul className="list-disc ml-5 space-y-1">
             <li>Set <code className="bg-slate-100 px-1 rounded">REACT_APP_API_BASE</code> to your Spring Boot base URL if different from the frontend origin.</li>
             <li>Backend endpoints used: <code className="bg-slate-100 px-1 rounded">/v1/client/put</code> (POST JSON: <code className="bg-slate-100 px-1 rounded">{"key":"...","value":"..."}</code>) and <code className="bg-slate-100 px-1 rounded">/v1/client/get?key=...</code>.</li>
           </ul>
-        </footer>
+        </footer> */}
       </div>
     </div>
   );
