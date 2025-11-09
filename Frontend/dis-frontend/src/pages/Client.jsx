@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 
-export default function ClientFrontend() {
+export default function Client() {
   const [putKey, setPutKey] = useState("");
   const [putValue, setPutValue] = useState("");
   const [putResult, setPutResult] = useState(null);

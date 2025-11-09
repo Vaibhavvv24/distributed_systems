@@ -4,7 +4,7 @@ import React, { useState } from "react";
 // Tailwind CSS only — no inline styles. Place this file in your React app (e.g. src/components/ControllerFrontend.jsx).
 // Ensure Tailwind is configured. Set API base via REACT_APP_API_BASE (e.g. "http://localhost:8080").
 
-const API_BASE = process.env.REACT_APP_API_BASE || "";
+// const API_BASE = process.env.REACT_APP_API_BASE || "";
 
 export default function ControllerFrontend() {
   // Register worker
@@ -51,7 +51,7 @@ export default function ControllerFrontend() {
 
     try {
       const params = new URLSearchParams({ id: regId.trim(), host: regHost.trim(), port: String(regPort) });
-      const res = await fetch(`${API_BASE}/v1/controller/register?${params.toString()}`, { method: "POST" });
+      const res = await fetch(`http://localhost:8080/v1/controller/register?${params.toString()}`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const text = await res.text();
       setRegResult(text);
@@ -103,7 +103,7 @@ export default function ControllerFrontend() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/v1/controller/key-mapping/${encodeURIComponent(mapKey.trim())}`);
+      const res = await fetch(`http://localhost:8080/v1/controller/key-mapping/${encodeURIComponent(mapKey.trim())}`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const data = await res.json();
       setMapResult(data);
@@ -119,7 +119,7 @@ export default function ControllerFrontend() {
     setWorkersError(null);
     setWorkers(null);
     try {
-      const res = await fetch(`${API_BASE}/v1/controller/workers`);
+      const res = await fetch(`http://localhost:8080/v1/controller/workers`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const data = await res.json();
       setWorkers(data);
@@ -135,7 +135,7 @@ export default function ControllerFrontend() {
     setRerepError(null);
     setRerepResult(null);
     try {
-      const res = await fetch(`${API_BASE}/v1/controller/trigger-rereplicate`, { method: "POST" });
+      const res = await fetch(`http://localhost:8080/v1/controller/trigger-rereplicate`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       setRerepResult("Triggered");
     } catch (err) {
@@ -277,12 +277,12 @@ export default function ControllerFrontend() {
           </section>
         </div>
 
-        <footer className="mt-6 text-sm text-slate-500">
+        {/* <footer className="mt-6 text-sm text-slate-500">
           <ul className="list-disc ml-5 space-y-1">
             <li>Set <code className="bg-slate-100 px-1 rounded">REACT_APP_API_BASE</code> to your Spring Boot base URL if different from the frontend origin.</li>
             <li>Controller endpoints: <code className="bg-slate-100 px-1 rounded">/v1/controller/register</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/heartbeat</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/key-mapping/{"{key}"}</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/workers</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/trigger-rereplicate</code>.</li>
           </ul>
-        </footer>
+        </footer> */}
       </div>
     </div>
   );
