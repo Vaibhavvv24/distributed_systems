@@ -41,7 +41,7 @@ public class WorkerService {
 
         // 2️⃣ Send to first replica (synchronous)
         try {
-            restTemplate.put(replicaUrls.get(0) + "/worker/replicate/" + key, record);
+            restTemplate.put(replicaUrls.get(0) + "/v1/worker/replicate/" + key, record);
             successCount++;
             log.append("Replica 1 written successfully. ");
         } catch (Exception e) {
@@ -51,7 +51,7 @@ public class WorkerService {
         // 3️⃣ Send to second replica (asynchronous)
         CompletableFuture.runAsync(() -> {
             try {
-                restTemplate.put(replicaUrls.get(1) + "/worker/replicate/" + key, record);
+                restTemplate.put(replicaUrls.get(1) + "/v1/worker/replicate/" + key, record);
                 System.out.println("Replica 2 written (async)");
             } catch (Exception e) {
                 System.err.println("Replica 2 async write failed: " + e.getMessage());
