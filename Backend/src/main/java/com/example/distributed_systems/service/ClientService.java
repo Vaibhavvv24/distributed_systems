@@ -16,7 +16,7 @@ public class ClientService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private final String CONTROLLER_URL = "http://localhost:8080/controller/key-mapping";
+    private final String CONTROLLER_URL = "http://localhost:8085/v1/controller/key-mapping";
 
     /**
      * Perform PUT operation:

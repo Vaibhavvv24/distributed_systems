@@ -50,16 +50,29 @@ export default function ControllerFrontend() {
     }
 
     try {
-      const params = new URLSearchParams({ id: regId.trim(), host: regHost.trim(), port: String(regPort) });
-      const res = await fetch(`http://localhost:8080/v1/controller/register?${params.toString()}`, { method: "POST" });
-      if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
-      const text = await res.text();
-      setRegResult(text);
-    } catch (err) {
-      setRegError(err.message || "Unknown error");
-    } finally {
-      setRegLoading(false);
-    }
+  const formData = new URLSearchParams();
+  formData.append("id", regId.trim());
+  formData.append("host", regHost.trim());
+  formData.append("port", String(regPort));
+
+  const res = await fetch("http://localhost:8085/v1/controller/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: formData.toString(),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+
+  const text = await res.text();
+  setRegResult(text);
+} catch (err) {
+  setRegError(err.message || "Unknown error");
+} finally {
+  setRegLoading(false);
+}
+
   }
 
   async function handleHeartbeat(e) {
@@ -75,7 +88,7 @@ export default function ControllerFrontend() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/v1/controller/heartbeat`, {
+      const res = await fetch(`http://localhost:8085/v1/controller/heartbeat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: hbId.trim() }),
@@ -103,7 +116,7 @@ export default function ControllerFrontend() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/v1/controller/key-mapping/${encodeURIComponent(mapKey.trim())}`);
+      const res = await fetch(`http://localhost:8085/v1/controller/key-mapping/${encodeURIComponent(mapKey.trim())}`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const data = await res.json();
       setMapResult(data);
@@ -119,7 +132,7 @@ export default function ControllerFrontend() {
     setWorkersError(null);
     setWorkers(null);
     try {
-      const res = await fetch(`http://localhost:8080/v1/controller/workers`);
+      const res = await fetch(`http://localhost:8085/v1/controller/workers`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const data = await res.json();
       setWorkers(data);
@@ -135,7 +148,7 @@ export default function ControllerFrontend() {
     setRerepError(null);
     setRerepResult(null);
     try {
-      const res = await fetch(`http://localhost:8080/v1/controller/trigger-rereplicate`, { method: "POST" });
+      const res = await fetch(`http://localhost:8085/v1/controller/trigger-rereplicate`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       setRerepResult("Triggered");
     } catch (err) {

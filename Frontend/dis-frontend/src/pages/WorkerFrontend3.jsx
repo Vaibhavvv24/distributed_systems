@@ -5,7 +5,7 @@ import React, { useState } from "react";
 // Ensure Tailwind is configured. Set API base via REACT_APP_API_BASE (e.g. "http://localhost:8081").
 
 
-export default function WorkerFrontend() {
+export default function WorkerFrontend3() {
   const [status, setStatus] = useState(null);
   const [statusError, setStatusError] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
@@ -36,7 +36,7 @@ export default function WorkerFrontend() {
     setStatusError(null);
     setStatus(null);
     try {
-      const res = await fetch(`http://localhost:8081/v1/worker/status`);
+      const res = await fetch(`http://localhost:8083/v1/worker/status`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const text = await res.text();
       setStatus(text);
@@ -59,7 +59,7 @@ export default function WorkerFrontend() {
     }
     try {
       const params = new URLSearchParams({ key: getKey.trim() });
-      const res = await fetch(`http://localhost:8081/v1/worker/get?${params.toString()}`);
+      const res = await fetch(`http://localhost:8083/v1/worker/get?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       const data = await res.json();
       setGetResult(data);
@@ -81,7 +81,7 @@ export default function WorkerFrontend() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8081/v1/worker/put`, {
+      const res = await fetch(`http://localhost:8083/v1/worker/put`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: putKey.trim(), value: putValue }),
@@ -116,7 +116,7 @@ export default function WorkerFrontend() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8081/v1/worker/replicate/${encodeURIComponent(repKey.trim())}`, {
+      const res = await fetch(`http://localhost:8083/v1/worker/replicate/${encodeURIComponent(repKey.trim())}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed),
@@ -135,7 +135,7 @@ export default function WorkerFrontend() {
     setHealthError(null);
     setHealthStatus(null);
     try {
-      const res = await fetch(`http://localhost:8081/v1/worker/health`);
+      const res = await fetch(`http://localhost:8083/v1/worker/health`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
       setHealthStatus("healthy");
     } catch (err) {
