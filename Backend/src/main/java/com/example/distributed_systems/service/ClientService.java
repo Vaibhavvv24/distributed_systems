@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -26,7 +28,10 @@ public class ClientService {
      */
     public ClientPutResponse put(String key, String value) {
         
-       RouteResponse mapping = restTemplate.getForObject(CONTROLLER_URL + "?key=" + key, RouteResponse.class);
+      RouteResponse mapping = restTemplate.getForObject(
+    CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
+    RouteResponse.class
+);
         if (mapping == null || mapping.getReplicas().isEmpty()) {
             return new ClientPutResponse(false, "No workers available");
         }
@@ -81,13 +86,16 @@ public class ClientService {
      * 2. Read from primary replica.
      */
     public ClientGetResponse get(String key) {
-       RouteResponse mapping = restTemplate.getForObject(CONTROLLER_URL + "?key=" + key, RouteResponse.class);
+        RouteResponse mapping = restTemplate.getForObject(
+    CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
+    RouteResponse.class
+);
         if (mapping == null || mapping.getReplicas().isEmpty()) {
             return new ClientGetResponse(key, "No replicas available");
         }
 
         WorkerInfo primary = mapping.getReplicas().get(0);
-        String url = "http://" + primary.getHost() + ":" + primary.getPort() + "/v1/worker/get?key=" + key;
+        String url = "http://" + primary.getHost() + ":" + primary.getPort() + "/v1/worker/get/" + URLEncoder.encode(key, StandardCharsets.UTF_8);
 
         try {
             GetResponse resp = restTemplate.getForObject(url, GetResponse.class);
