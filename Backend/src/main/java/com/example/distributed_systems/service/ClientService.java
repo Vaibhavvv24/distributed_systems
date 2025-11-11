@@ -26,79 +26,44 @@ public class ClientService {
      * 2. Write synchronously to 2 replicas.
      * 3. Write asynchronously to the 3rd replica.
      */
-   public ClientPutResponse put(String key, String value) {
+  // imports used:
+// import java.net.URLEncoder;
+// import java.nio.charset.StandardCharsets;
+// import java.util.List;
 
-    // Step 1: Ask controller for mapping (primary + replicas)
+public ClientPutResponse put(String key, String value) {
+
+    // 1) Query controller to get primary + replicas
     RouteResponse mapping = restTemplate.getForObject(
         CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
         RouteResponse.class
     );
 
-    if (mapping == null || mapping.getPrimary() == null || mapping.getReplicas() == null || mapping.getReplicas().isEmpty()) {
-        return new ClientPutResponse(false, "No workers available");
+    if (mapping == null || mapping.getPrimary() == null) {
+        return new ClientPutResponse(false, "No primary available");
     }
 
     WorkerInfo primary = mapping.getPrimary();
-    List<WorkerInfo> replicas = mapping.getReplicas();
-    int successCount = 0;
 
-    // ---------- Primary write (synchronous) ----------
+    // 2) Call only the primary. Primary will replicate to two other workers (sync + async).
     try {
         String primaryUrl = "http://" + primary.getHost() + ":" + primary.getPort() + "/v1/worker/put";
         PutRequest req = new PutRequest();
         req.setKey(key);
         req.setValue(value);
 
+        // primary returns PutResponse(success) indicating whether it achieved local + one replica write
         PutResponse resp = restTemplate.postForObject(primaryUrl, req, PutResponse.class);
         if (resp != null && resp.isSuccess()) {
-            successCount++;
-            System.out.println("🟢 Written to primary: " + primary.getId());
+            return new ClientPutResponse(true, "Data written successfully (primary confirmed)");
+        } else {
+            // resp == null OR resp.isSuccess() == false
+            String msg = (resp == null) ? "Primary returned no response" : "Primary reported failure: " + resp.isSuccess();
+            return new ClientPutResponse(false, "Write failed: " + msg);
         }
     } catch (Exception e) {
-        System.out.println("❌ PUT failed on primary " + primary.getId() + ": " + e.getMessage());
-    }
-
-    // ---------- Replica 1 write (synchronous) ----------
-    if (replicas.size() >= 1) {
-        WorkerInfo replica1 = replicas.get(0);
-        try {
-            String url = "http://" + replica1.getHost() + ":" + replica1.getPort() + "/v1/worker/put";
-            PutRequest req = new PutRequest();
-            req.setKey(key);
-            req.setValue(value);
-
-            PutResponse resp = restTemplate.postForObject(url, req, PutResponse.class);
-            if (resp != null && resp.isSuccess()) {
-                successCount++;
-                System.out.println("🟢 Written synchronously to replica1: " + replica1.getId());
-            }
-        } catch (Exception e) {
-            System.out.println("❌ PUT failed on replica1 " + replica1.getId() + ": " + e.getMessage());
-        }
-    }
-
-    // ---------- Replica 2 write (asynchronous) ----------
-    if (replicas.size() >= 2) {
-        WorkerInfo replica2 = replicas.get(1);
-        CompletableFuture.runAsync(() -> {
-            try {
-                String url = "http://" + replica2.getHost() + ":" + replica2.getPort() + "/v1/worker/put";
-                PutRequest req = new PutRequest();
-                req.setKey(key);
-                req.setValue(value);
-                restTemplate.postForObject(url, req, PutResponse.class);
-                System.out.println("🟡 Async replication done on replica2: " + replica2.getId());
-            } catch (Exception e) {
-                System.out.println("⚠️ Async replication failed on replica2 " + replica2.getId() + ": " + e.getMessage());
-            }
-        }, Executors.newSingleThreadExecutor());
-    }
-
-    // ---------- Result ----------
-    if (successCount >= 2) { // Primary + one replica OK
-        return new ClientPutResponse(true, "Data written successfully to primary and one replica");
-    } else {
-        return new ClientPutResponse(false, "Failed to write to enough nodes");
+        // Primary unreachable or other client error
+        return new ClientPutResponse(false, "Primary unavailable: " + e.getMessage());
     }
 }
 

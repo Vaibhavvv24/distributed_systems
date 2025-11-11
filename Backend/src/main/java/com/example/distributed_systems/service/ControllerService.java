@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.distributed_systems.dto.RouteResponse;
 import com.example.distributed_systems.dto.WorkerInfo;
-
+import com.example.distributed_systems.config.WorkerConfig;
 import jakarta.annotation.PostConstruct;
 
 @Service
@@ -20,6 +20,10 @@ public class ControllerService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+
+    @Autowired
+    private WorkerConfig workerConfig; 
 
     private final Map<String, WorkerInfo> workers = new ConcurrentHashMap<>();
     private final List<WorkerInfo> workerList = Collections.synchronizedList(new ArrayList<>());
@@ -55,28 +59,42 @@ public class ControllerService {
 
     // Get mapping of a key to primary + replicas
     public RouteResponse getKeyMapping(String key) {
-        if (workerList.isEmpty()) {
-            throw new IllegalStateException("No workers available");
-        }
-
-        List<WorkerInfo> snapshot;
-        synchronized (workerList) {
-            snapshot = new ArrayList<>(workerList);
-        }
-
-        int hash = Math.abs(key.hashCode());
-        int primaryIndex = hash % snapshot.size();
-
-        WorkerInfo primary = snapshot.get(primaryIndex);
-
-        List<WorkerInfo> replicas = new ArrayList<>();
-        for (int i = 1; i < REPLICATION_FACTOR; i++) {
-            replicas.add(snapshot.get((primaryIndex + i) % snapshot.size()));
-        }
-
-        return new RouteResponse(key, primary, replicas);
+    if (workerList.isEmpty()) {
+        throw new IllegalStateException("No workers available");
     }
 
+    // Take a thread-safe snapshot of workers
+    List<WorkerInfo> snapshot;
+    synchronized (workerList) {
+        snapshot = new ArrayList<>(workerList);
+    }
+
+    // 1️⃣ Choose primary using hashing
+    int hash = Math.abs(key.hashCode());
+    int primaryIndex = hash % snapshot.size();
+    WorkerInfo primary = snapshot.get(primaryIndex);
+
+    // 2️⃣ Determine replicas from the static map based on primary ID
+    List<WorkerInfo> replicas = new ArrayList<>();
+    List<String> replicaUrls = workerConfig.getReplicaUrls(primary.getId());
+    System.out.println(replicaUrls.get(0));
+
+    if (replicaUrls != null) {
+        for (String url : replicaUrls) {
+            // find the WorkerInfo object matching the URL
+            for (WorkerInfo w : snapshot) {
+                String workerUrl = "http://" + w.getHost() + ":" + w.getPort();
+                if (workerUrl.equals(url)) {
+                    replicas.add(w);
+                    break;
+                }
+            }
+        }
+    }
+
+    // 3️⃣ Return route info
+    return new RouteResponse(key, primary, replicas);
+}
     // Handle worker heartbeat
     public void updateHeartbeat(String workerId) {
         WorkerInfo worker = workers.get(workerId);
