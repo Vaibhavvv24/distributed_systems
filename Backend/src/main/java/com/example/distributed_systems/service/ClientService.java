@@ -73,31 +73,64 @@ public ClientPutResponse put(String key, String value) {
      * 1. Query controller to get mapping.
      * 2. Read from primary replica.
      */
-   public ClientGetResponse get(String key) {
+//    public ClientGetResponse get(String key) {
+//     RouteResponse mapping = restTemplate.getForObject(
+//         CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
+//         RouteResponse.class
+//     );
+
+//     if (mapping == null || mapping.getPrimary() == null) {
+//         return new ClientGetResponse(key, "No primary available");
+//     }
+
+//     WorkerInfo primary = mapping.getPrimary();
+//     String url = "http://" + primary.getHost() + ":" + primary.getPort() +
+//                  "/v1/worker/get?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8);
+
+//     try {
+//         GetResponse resp = restTemplate.getForObject(url, GetResponse.class);
+//         if (resp != null) {
+//             System.out.println("🟢 Read value from primary: " + primary.getId());
+//             return new ClientGetResponse(key, resp.getValue());
+//         } else {
+//             return new ClientGetResponse(key, "Not found");
+//         }
+//     } catch (Exception e) {
+//         System.out.println("❌ Primary read failed on " + primary.getId() + ": " + e.getMessage());
+//         return new ClientGetResponse(key, "Primary unavailable");
+//     }
+// }
+
+public WorkerInfo get(String key) {
     RouteResponse mapping = restTemplate.getForObject(
         CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
         RouteResponse.class
     );
 
     if (mapping == null || mapping.getPrimary() == null) {
-        return new ClientGetResponse(key, "No primary available");
+        return null;
     }
-
     WorkerInfo primary = mapping.getPrimary();
-    String url = "http://" + primary.getHost() + ":" + primary.getPort() +
+    System.out.println("🟢 Key mapped to primary: " + primary.getId());
+    return primary;
+}
+
+public ClientGetResponse getVal(String key,String id,String host,int port) {
+    String url = "http://" + host + ":" + port +
                  "/v1/worker/get?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8);
 
     try {
         GetResponse resp = restTemplate.getForObject(url, GetResponse.class);
         if (resp != null) {
-            System.out.println("🟢 Read value from primary: " + primary.getId());
+            System.out.println("🟢 Read value from primary: " + id);
             return new ClientGetResponse(key, resp.getValue());
         } else {
             return new ClientGetResponse(key, "Not found");
         }
     } catch (Exception e) {
-        System.out.println("❌ Primary read failed on " + primary.getId() + ": " + e.getMessage());
+        System.out.println("❌ Primary read failed on " + id + ": " + e.getMessage());
         return new ClientGetResponse(key, "Primary unavailable");
     }
+    
 }
 }

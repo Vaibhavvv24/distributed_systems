@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -72,21 +73,40 @@ public PutResponse put(String key, String value) {
     }
 
     // Replica 2 (asynchronous)
-    if (replicaUrls.size() >= 2) {
-        String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
-        String replica2Url = replicaUrls.get(1) + "/v1/worker/replicate/" + encodedKey2;
+    // if (replicaUrls.size() >= 2) {
+    //     String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
+    //     String replica2Url = replicaUrls.get(1) + "/v1/worker/replicate/" + encodedKey2;
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                restTemplate.put(replica2Url, record);
-                System.out.println("🟡 Replica2 written (async)");
-            } catch (Exception e) {
-                System.err.println("⚠️ Replica2 async write failed: " + e.getMessage());
-            }
-        });
-    } else {
-        log.append("Replica2 missing. ");
-    }
+    //     CompletableFuture.runAsync(() -> {
+    //         try {
+    //             restTemplate.put(replica2Url, record);
+    //             System.out.println("🟡 Replica2 written (async)");
+    //         } catch (Exception e) {
+    //             System.err.println("⚠️ Replica2 async write failed: " + e.getMessage());
+    //         }
+    //     });
+    // } else {
+    //     log.append("Replica2 missing. ");
+    // }
+
+    
+
+if (replicaUrls.size() >= 2) {
+    String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
+    String replica2Url = replicaUrls.get(1) + "/v1/worker/replicate/" + encodedKey2;
+
+    CompletableFuture.runAsync(() -> {
+        try {
+            restTemplate.put(replica2Url, record);
+            System.out.println("🟡 Replica2 written (async after delay)");
+        } catch (Exception e) {
+            System.err.println("⚠️ Replica2 async write failed: " + e.getMessage());
+        }
+    }, CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS)); // ⏱️ 5-second delay
+} else {
+    log.append("Replica2 missing. ");
+}
+
 
     boolean success = successCount >= 2; // local + at least one replica
     return new PutResponse(key, success, log.toString());

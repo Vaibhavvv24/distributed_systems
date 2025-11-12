@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import com.example.distributed_systems.dto.WorkerInfo;
 
 @RestController
 @RequestMapping("/v1/client")
@@ -28,7 +29,11 @@ public class ClientController {
     }
 
     @GetMapping("/get")
-    public ClientGetResponse get(@RequestParam String key) {
+    public WorkerInfo get(@RequestParam String key) {
         return clientService.get(key);
+    }
+    @GetMapping("/get/val")
+    public ClientGetResponse getVal(@RequestParam String key, @RequestParam String id, @RequestParam String host, @RequestParam int port) {
+        return clientService.getVal(key, id, host, port);
     }
 }
