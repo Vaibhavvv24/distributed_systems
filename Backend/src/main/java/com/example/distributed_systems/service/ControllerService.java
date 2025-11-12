@@ -30,35 +30,40 @@ public class ControllerService {
     private static final int REPLICATION_FACTOR = 3;
     private static final long HEARTBEAT_TIMEOUT_MS = 10000; // 10 seconds
 
-     @PostConstruct
-    public void startHeartbeatChecker() {
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            long now = System.currentTimeMillis();
-            for (WorkerInfo w : workers.values()) {
-                if (now - w.getLastHeartbeat() > HEARTBEAT_TIMEOUT_MS) {
-                    w.setAlive(false);
-                    System.err.println("❌ Worker marked dead: " + w.getId());
-                }
+    // ControllerService.java (or wherever your controller logic is)
+@PostConstruct
+public void startHeartbeatChecker() {
+    Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+        long now = System.currentTimeMillis();
+        for (WorkerInfo w : workers.values()) {
+            if (now - w.getLastHeartbeat() > HEARTBEAT_TIMEOUT_MS) {
+                w.setAlive(false);
+                System.err.println("❌ Worker marked dead: " + w.getId());
+            } else {
+                w.setAlive(true);
             }
-        }, 5, 5, TimeUnit.SECONDS); // check every 5 seconds
-    }
-
-    // Register worker
-    public synchronized void registerWorker(String id, String host, int port) {
-        if (workers.containsKey(id)) {
-            WorkerInfo existing = workers.get(id);
-            existing.setHost(host);
-            existing.setPort(port);
-            existing.setAlive(true);
-        } else {
-            WorkerInfo info = new WorkerInfo(id, host, port, true,System.currentTimeMillis());
-            workers.put(id, info);
-            workerList.add(info);
         }
-    }
+    }, 5, 5, TimeUnit.SECONDS); // check every 5 seconds
+}
 
-    // Get mapping of a key to primary + replicas
-    public RouteResponse getKeyMapping(String key) {
+// Register worker (called when worker starts up)
+public synchronized void registerWorker(String id, String host, int port) {
+    if (workers.containsKey(id)) {
+        WorkerInfo existing = workers.get(id);
+        existing.setHost(host);
+        existing.setPort(port);
+        existing.setAlive(true);
+        existing.setLastHeartbeat(System.currentTimeMillis());
+    } else {
+        WorkerInfo info = new WorkerInfo(id, host, port, true, System.currentTimeMillis());
+        workers.put(id, info);
+        workerList.add(info);
+    }
+    System.out.println("✅ Worker registered/updated: " + id + " (" + host + ":" + port + ")");
+}
+
+// Get mapping of a key to primary + replicas
+public RouteResponse getKeyMapping(String key) {
     if (workerList.isEmpty()) {
         throw new IllegalStateException("No workers available");
     }
@@ -69,22 +74,29 @@ public class ControllerService {
         snapshot = new ArrayList<>(workerList);
     }
 
+    // 🔍 Filter only alive workers
+    List<WorkerInfo> aliveWorkers = snapshot.stream()
+            .filter(WorkerInfo::isAlive)
+            .toList();
+
+    if (aliveWorkers.isEmpty()) {
+        throw new IllegalStateException("No alive workers available");
+    }
+
     // 1️⃣ Choose primary using hashing
     int hash = Math.abs(key.hashCode());
-    int primaryIndex = hash % snapshot.size();
-    WorkerInfo primary = snapshot.get(primaryIndex);
+    int primaryIndex = hash % aliveWorkers.size();
+    WorkerInfo primary = aliveWorkers.get(primaryIndex);
 
-    // 2️⃣ Determine replicas from the static map based on primary ID
+    // 2️⃣ Determine replicas dynamically (only from alive ones)
     List<WorkerInfo> replicas = new ArrayList<>();
     List<String> replicaUrls = workerConfig.getReplicaUrls(primary.getId());
-    System.out.println(replicaUrls.get(0));
 
     if (replicaUrls != null) {
         for (String url : replicaUrls) {
-            // find the WorkerInfo object matching the URL
-            for (WorkerInfo w : snapshot) {
+            for (WorkerInfo w : aliveWorkers) {
                 String workerUrl = "http://" + w.getHost() + ":" + w.getPort();
-                if (workerUrl.equals(url)) {
+                if (workerUrl.equals(url) && w.isAlive()) {
                     replicas.add(w);
                     break;
                 }
@@ -92,9 +104,23 @@ public class ControllerService {
         }
     }
 
-    // 3️⃣ Return route info
+    // 3️⃣ If replicas < 2, fill from other alive nodes (for redundancy)
+    if (replicas.size() < 2) {
+        for (WorkerInfo w : aliveWorkers) {
+            if (!w.getId().equals(primary.getId()) && !replicas.contains(w)) {
+                replicas.add(w);
+            }
+            if (replicas.size() >= 2) break;
+        }
+    }
+
+    System.out.printf("📡 Key '%s' → Primary: %s | Replicas: %s%n",
+            key, primary.getId(),
+            replicas.stream().map(WorkerInfo::getId).toList());
+
     return new RouteResponse(key, primary, replicas);
 }
+
     // Handle worker heartbeat
     public void updateHeartbeat(String workerId) {
         WorkerInfo worker = workers.get(workerId);
