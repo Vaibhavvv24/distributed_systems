@@ -58,9 +58,5 @@ public class Controller {
         return ResponseEntity.ok(list);
     }
 
-    @PostMapping("/trigger-rereplicate")
-    public ResponseEntity<Void> triggerReReplication() {
-        controllerService.triggerReReplication();
-        return ResponseEntity.ok().build();
-    }
+    
 }
