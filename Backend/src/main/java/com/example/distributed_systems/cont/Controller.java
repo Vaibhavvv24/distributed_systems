@@ -57,6 +57,11 @@ public class Controller {
         List<WorkerInfo> list = controllerService.listWorkers();
         return ResponseEntity.ok(list);
     }
+    @PostMapping("/replica/ack")
+public ResponseEntity<String> replicaAck(@RequestParam String key, @RequestParam String replicaId) {
+    System.out.println("✅ Async replication confirmed for key '" + key + "' on replica " + replicaId);
+    return ResponseEntity.ok("Acknowledged");
+}
 
     
 }

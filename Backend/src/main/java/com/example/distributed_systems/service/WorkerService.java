@@ -27,7 +27,7 @@ public class WorkerService {
     private final Map<String, String> store = new ConcurrentHashMap<>();
 
       private final String CONTROLLER_URL = "http://localhost:8085/v1/controller/key-mapping";
-
+        private final String CONTROLLER_URL1 = "http://localhost:8085/v1/controller";
     @Value("${worker.id}")
     private String workerId;
 
@@ -89,23 +89,46 @@ public PutResponse put(String key, String value) {
         }
 
         // ✅ Replica 2 — asynchronous (after 5 s delay)
-        if (aliveReplicas.size() >= 2) {
-            WorkerInfo replica2 = aliveReplicas.get(1);
-            String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
-            String replica2Url = "http://" + replica2.getHost() + ":" + replica2.getPort()
-                    + "/v1/worker/replicate/" + encodedKey2;
+        // if (aliveReplicas.size() >= 2) {
+        //     WorkerInfo replica2 = aliveReplicas.get(1);
+        //     String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
+        //     String replica2Url = "http://" + replica2.getHost() + ":" + replica2.getPort()
+        //             + "/v1/worker/replicate/" + encodedKey2;
 
-            CompletableFuture.runAsync(() -> {
-                try {
-                    restTemplate.put(replica2Url, record);
-                    System.out.println("🟡 Replica2 written (async after 5 s) → " + replica2.getId());
-                } catch (Exception e) {
-                    System.err.println("⚠️ Replica2 async write failed (" + replica2.getId() + "): " + e.getMessage());
-                }
-            }, CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS));
-        } else {
-            log.append("No replica2 available. ");
+        //     CompletableFuture.runAsync(() -> {
+        //         try {
+        //             restTemplate.put(replica2Url, record);
+        //             System.out.println("🟡 Replica2 written (async after 5 s) → " + replica2.getId());
+        //         } catch (Exception e) {
+        //             System.err.println("⚠️ Replica2 async write failed (" + replica2.getId() + "): " + e.getMessage());
+        //         }
+        //     }, CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS));
+        // } else {
+        //     log.append("No replica2 available. ");
+        // }
+
+        if (aliveReplicas.size() >= 2) {
+    WorkerInfo replica2 = aliveReplicas.get(1);
+    String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
+    String replica2Url = "http://" + replica2.getHost() + ":" + replica2.getPort()
+            + "/v1/worker/replicate/" + encodedKey2;
+
+    CompletableFuture.runAsync(() -> {
+        try {
+            restTemplate.put(replica2Url, record);
+            System.out.println("🟡 Replica2 written (async after 5 s) → " + replica2.getId());
+
+            // ✅ Notify controller
+            String ackUrl = CONTROLLER_URL1 + "/replica/ack?key=" + encodedKey2 + "&replicaId=" + replica2.getId();
+            restTemplate.postForObject(ackUrl, null, String.class);
+
+        } catch (Exception e) {
+            System.err.println("⚠️ Replica2 async write failed (" + replica2.getId() + "): " + e.getMessage());
         }
+    }, CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS));
+} else {
+    log.append("No replica2 available. ");
+}
 
     } catch (Exception e) {
         log.append("Controller lookup failed: ").append(e.getMessage()).append(". ");
