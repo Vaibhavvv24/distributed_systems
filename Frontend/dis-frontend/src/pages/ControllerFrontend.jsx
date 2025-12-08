@@ -163,7 +163,7 @@ export default function ControllerFrontend() {
       <div className="max-w-6xl mx-auto px-4">
         <header className="mb-8">
           <h1 className="text-2xl font-extrabold text-slate-800">Controller Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">Interact with controller endpoints (register, heartbeat, key mapping, workers, re-replication)</p>
+          <p className="mt-1 text-sm text-slate-500">Interact with controller endpoints (register, key mapping, workers)</p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -201,7 +201,7 @@ export default function ControllerFrontend() {
             </form>
           </section>
 
-          {/* Heartbeat */}
+          {/* Heartbeat
           <section className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800">Heartbeat</h2>
@@ -223,7 +223,7 @@ export default function ControllerFrontend() {
               {hbError && <div className="text-sm text-red-600">Error: {hbError}</div>}
               {hbResult && <div className="mt-2 rounded-md bg-slate-50 p-3 border border-slate-100 text-sm"><div className="text-xs text-slate-500">Response</div><pre className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{JSON.stringify(hbResult, null, 2)}</pre></div>}
             </form>
-          </section>
+          </section> */}
 
           {/* Key mapping */}
           <section className="bg-white rounded-2xl shadow-md p-6">
@@ -252,8 +252,8 @@ export default function ControllerFrontend() {
           {/* Workers & Rereplication */}
           <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-800">Workers & Re-replication</h2>
-              <span className="text-xs text-slate-500">GET /workers · POST /trigger-rereplicate</span>
+              <h2 className="text-lg font-semibold text-slate-800">Workers</h2>
+              <span className="text-xs text-slate-500">GET /workers</span>
             </div>
 
             <div className="mt-4 space-y-4">
@@ -261,11 +261,11 @@ export default function ControllerFrontend() {
                 <button onClick={handleListWorkers} disabled={workersLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 text-white font-medium shadow hover:bg-sky-700 disabled:opacity-60">{workersLoading ? "Loading..." : "List Workers"}</button>
                 <button onClick={() => { setWorkers(null); setWorkersError(null); }} className="px-3 py-2 rounded-lg border border-slate-200">Clear</button>
 
-                <div className="ml-auto flex items-center gap-3">
+                {/* <div className="ml-auto flex items-center gap-3">
                   <button onClick={handleTriggerReReplication} disabled={rerepLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-medium shadow hover:bg-rose-700 disabled:opacity-60">{rerepLoading ? "Triggering..." : "Trigger Re-replication"}</button>
                   {rerepResult && <div className="text-sm text-green-600">{rerepResult}</div>}
                   {rerepError && <div className="text-sm text-red-600">{rerepError}</div>}
-                </div>
+                </div> */}
               </div>
 
               {workersError && <div className="text-sm text-red-600">Error: {workersError}</div>}
@@ -280,7 +280,7 @@ export default function ControllerFrontend() {
                           <div className="text-sm font-medium text-slate-800">{w.id}</div>
                           <div className="text-xs text-slate-500">{w.host}:{w.port}</div>
                         </div>
-                        <div className="text-xs text-slate-500">status: {w.status ?? 'unknown'}</div>
+                        <div className="text-xs text-slate-500">status: {w.alive ? 'alive' : 'dead'}</div>
                       </div>
                     ))}
                   </div>

@@ -143,10 +143,10 @@ export default function Client() {
       <div className="max-w-5xl mx-auto px-4">
         <header className="mb-8">
           <h1 className="text-2xl font-extrabold text-slate-800">Distributed KV Client</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          {/* <p className="mt-1 text-sm text-slate-500">
             Frontend for <code>/v1/client/put</code>, <code>/v1/client/get</code>, and{" "}
             <code>/v1/client/getVal</code>
-          </p>
+          </p> */}
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">

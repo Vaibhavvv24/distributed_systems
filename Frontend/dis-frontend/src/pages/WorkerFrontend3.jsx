@@ -130,27 +130,27 @@ export default function WorkerFrontend3() {
     }
   }
 
-  async function checkHealth() {
-    setHealthLoading(true);
-    setHealthError(null);
-    setHealthStatus(null);
-    try {
-      const res = await fetch(`http://localhost:8083/v1/worker/health`);
-      if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
-      setHealthStatus("healthy");
-    } catch (err) {
-      setHealthError(err.message || "Unknown error");
-    } finally {
-      setHealthLoading(false);
-    }
-  }
+  // async function checkHealth() {
+  //   setHealthLoading(true);
+  //   setHealthError(null);
+  //   setHealthStatus(null);
+  //   try {
+  //     const res = await fetch(`http://localhost:8083/v1/worker/health`);
+  //     if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+  //     setHealthStatus("healthy");
+  //   } catch (err) {
+  //     setHealthError(err.message || "Unknown error");
+  //   } finally {
+  //     setHealthLoading(false);
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white py-10">
       <div className="max-w-4xl mx-auto px-4">
         <header className="mb-8">
-          <h1 className="text-2xl font-extrabold text-slate-800">Worker Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">Interact with worker endpoints: status, get, put, replicate, health.</p>
+          <h1 className="text-2xl font-extrabold text-slate-800">Worker 3 Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-500">Interact with worker endpoints: status, get, put.</p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -167,7 +167,7 @@ export default function WorkerFrontend3() {
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl shadow-md p-6">
+          {/* <section className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800">Health</h2>
               <span className="text-xs text-slate-500">GET /v1/worker/health</span>
@@ -178,7 +178,7 @@ export default function WorkerFrontend3() {
               <button onClick={() => { setHealthStatus(null); setHealthError(null); }} className="px-3 py-2 rounded-lg border border-slate-200">Clear</button>
               <div className="ml-auto text-sm text-slate-500">{healthStatus ? <span className="text-green-600">{healthStatus}</span> : healthError ? <span className="text-red-600">{healthError}</span> : <span className="text-slate-400">idle</span>}</div>
             </div>
-          </section>
+          </section> */}
 
           <section className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ export default function WorkerFrontend3() {
             </form>
           </section>
 
-          <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
+          {/* <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800">Replicate Key</h2>
               <span className="text-xs text-slate-500">PUT /v1/worker/replicate/{"{key}"}</span>
@@ -257,15 +257,10 @@ export default function WorkerFrontend3() {
               {repError && <div className="text-sm text-red-600">Error: {repError}</div>}
               {repResult && <div className="mt-2 rounded-md bg-slate-50 p-3 border border-slate-100 text-sm"><div className="text-xs text-slate-500">Result</div><div className="mt-1 text-sm text-slate-700">{repResult}</div></div>}
             </form>
-          </section>
+          </section> */}
         </div>
 
-        <footer className="mt-6 text-sm text-slate-500">
-          <ul className="list-disc ml-5 space-y-1">
-            <li>Set <code className="bg-slate-100 px-1 rounded">REACT_APP_API_BASE</code> to your worker base URL if different from the frontend origin.</li>
-            <li>Worker endpoints: <code className="bg-slate-100 px-1 rounded">/v1/worker/status</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/get</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/put</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/replicate/{"{key}"}</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/health</code>.</li>
-          </ul>
-        </footer>
+     
       </div>
     </div>
   );

@@ -96,61 +96,61 @@ export default function WorkerFrontend4() {
     }
   }
 
-  async function handleReplicate(e) {
-    e?.preventDefault();
-    setRepLoading(true);
-    setRepError(null);
-    setRepResult(null);
-    if (!repKey.trim()) {
-      setRepError("Key is required");
-      setRepLoading(false);
-      return;
-    }
-    let parsed;
-    try {
-      parsed = JSON.parse(repRecord);
-    } catch (err) {
-      setRepError("replicate record must be valid JSON");
-      setRepLoading(false);
-      return;
-    }
+  // async function handleReplicate(e) {
+  //   e?.preventDefault();
+  //   setRepLoading(true);
+  //   setRepError(null);
+  //   setRepResult(null);
+  //   if (!repKey.trim()) {
+  //     setRepError("Key is required");
+  //     setRepLoading(false);
+  //     return;
+  //   }
+  //   let parsed;
+  //   try {
+  //     parsed = JSON.parse(repRecord);
+  //   } catch (err) {
+  //     setRepError("replicate record must be valid JSON");
+  //     setRepLoading(false);
+  //     return;
+  //   }
 
-    try {
-      const res = await fetch(`http://localhost:8084/v1/worker/replicate/${encodeURIComponent(repKey.trim())}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
-      setRepResult("OK");
-    } catch (err) {
-      setRepError(err.message || "Unknown error");
-    } finally {
-      setRepLoading(false);
-    }
-  }
+  //   try {
+  //     const res = await fetch(`http://localhost:8084/v1/worker/replicate/${encodeURIComponent(repKey.trim())}`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(parsed),
+  //     });
+  //     if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+  //     setRepResult("OK");
+  //   } catch (err) {
+  //     setRepError(err.message || "Unknown error");
+  //   } finally {
+  //     setRepLoading(false);
+  //   }
+  // }
 
-  async function checkHealth() {
-    setHealthLoading(true);
-    setHealthError(null);
-    setHealthStatus(null);
-    try {
-      const res = await fetch(`http://localhost:8084/v1/worker/health`);
-      if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
-      setHealthStatus("healthy");
-    } catch (err) {
-      setHealthError(err.message || "Unknown error");
-    } finally {
-      setHealthLoading(false);
-    }
-  }
+  // async function checkHealth() {
+  //   setHealthLoading(true);
+  //   setHealthError(null);
+  //   setHealthStatus(null);
+  //   try {
+  //     const res = await fetch(`http://localhost:8084/v1/worker/health`);
+  //     if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+  //     setHealthStatus("healthy");
+  //   } catch (err) {
+  //     setHealthError(err.message || "Unknown error");
+  //   } finally {
+  //     setHealthLoading(false);
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white py-10">
       <div className="max-w-4xl mx-auto px-4">
         <header className="mb-8">
-          <h1 className="text-2xl font-extrabold text-slate-800">Worker Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">Interact with worker endpoints: status, get, put, replicate, health.</p>
+          <h1 className="text-2xl font-extrabold text-slate-800">Worker 4 Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-500">Interact with worker endpoints: status, get, put.</p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -166,7 +166,7 @@ export default function WorkerFrontend4() {
               <div className="ml-auto text-sm text-slate-500">{status ? <span className="text-green-600">{status}</span> : statusError ? <span className="text-red-600">{statusError}</span> : <span className="text-slate-400">idle</span>}</div>
             </div>
           </section>
-
+{/* 
           <section className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-800">Health</h2>
@@ -178,7 +178,7 @@ export default function WorkerFrontend4() {
               <button onClick={() => { setHealthStatus(null); setHealthError(null); }} className="px-3 py-2 rounded-lg border border-slate-200">Clear</button>
               <div className="ml-auto text-sm text-slate-500">{healthStatus ? <span className="text-green-600">{healthStatus}</span> : healthError ? <span className="text-red-600">{healthError}</span> : <span className="text-slate-400">idle</span>}</div>
             </div>
-          </section>
+          </section> */}
 
           <section className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
@@ -231,41 +231,10 @@ export default function WorkerFrontend4() {
             </form>
           </section>
 
-          <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-800">Replicate Key</h2>
-              <span className="text-xs text-slate-500">PUT /v1/worker/replicate/{"{key}"}</span>
-            </div>
-
-            <form onSubmit={handleReplicate} className="mt-4 space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Key</label>
-                <input value={repKey} onChange={(e) => setRepKey(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="example-key" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700">KVRecord (JSON)</label>
-                <textarea value={repRecord} onChange={(e) => setRepRecord(e.target.value)} className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" rows={6} />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button disabled={repLoading} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-medium shadow hover:bg-rose-700 disabled:opacity-60">{repLoading ? "Replicating..." : "Replicate"}</button>
-                <button type="button" onClick={() => { setRepKey(""); setRepRecord('{"value":"..."}'); setRepResult(null); setRepError(null); }} className="px-3 py-2 rounded-lg border border-slate-200">Reset</button>
-                <div className="ml-auto text-sm text-slate-500">{repResult ? <span className="text-green-600">OK</span> : repError ? <span className="text-red-600">Error</span> : <span className="text-slate-400">idle</span>}</div>
-              </div>
-
-              {repError && <div className="text-sm text-red-600">Error: {repError}</div>}
-              {repResult && <div className="mt-2 rounded-md bg-slate-50 p-3 border border-slate-100 text-sm"><div className="text-xs text-slate-500">Result</div><div className="mt-1 text-sm text-slate-700">{repResult}</div></div>}
-            </form>
-          </section>
+         
         </div>
 
-        <footer className="mt-6 text-sm text-slate-500">
-          <ul className="list-disc ml-5 space-y-1">
-            <li>Set <code className="bg-slate-100 px-1 rounded">REACT_APP_API_BASE</code> to your worker base URL if different from the frontend origin.</li>
-            <li>Worker endpoints: <code className="bg-slate-100 px-1 rounded">/v1/worker/status</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/get</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/put</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/replicate/{"{key}"}</code>, <code className="bg-slate-100 px-1 rounded">/v1/worker/health</code>.</li>
-          </ul>
-        </footer>
+      
       </div>
     </div>
   );
