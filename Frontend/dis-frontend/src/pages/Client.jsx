@@ -151,7 +151,7 @@ export default function Client() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* PUT card */}
-          <section className="bg-white rounded-2xl shadow-md p-6">
+          <section className="bg-white rounded-2xl shadow-md p-10">
             <h2 className="text-lg font-semibold text-slate-800">PUT (store)</h2>
             <form onSubmit={handlePut} className="mt-4 space-y-4">
               <input
@@ -176,7 +176,7 @@ export default function Client() {
               </button>
               {putError && <p className="text-red-600 text-sm">Error: {putError}</p>}
               {putResult && (
-                <pre className="bg-slate-50 p-3 rounded text-sm border">
+                <pre className="bg-slate-50 p-1 rounded text-sm border">
                   {JSON.stringify(putResult, null, 2)}
                 </pre>
               )}
@@ -185,7 +185,7 @@ export default function Client() {
 
           {/* GET card (controller) */}
           <section className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-lg font-semibold text-slate-800">GET (via Controller)</h2>
+            <h2 className="text-lg font-semibold text-slate-800">GET Primary Worker Info</h2>
             <form onSubmit={handleGet} className="mt-4 space-y-4">
               <input
                 className="block w-full rounded-lg border border-slate-200 shadow-sm px-3 py-2"
@@ -212,7 +212,7 @@ export default function Client() {
           {/* 🆕 Direct GET from Worker */}
           <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
             <h2 className="text-lg font-semibold text-slate-800">
-              GET from Worker Directly (using /v1/client/getVal)
+              GET from Primary Worker 
             </h2>
             <form onSubmit={handleWorkerGet} className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <input

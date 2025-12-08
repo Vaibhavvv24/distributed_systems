@@ -55,7 +55,7 @@ public ClientPutResponse put(String key, String value) {
         // primary returns PutResponse(success) indicating whether it achieved local + one replica write
         PutResponse resp = restTemplate.postForObject(primaryUrl, req, PutResponse.class);
         if (resp != null && resp.isSuccess()) {
-            return new ClientPutResponse(true, "Data written successfully (primary confirmed)");
+            return new ClientPutResponse(true, "Data written successfully");
         } else {
             // resp == null OR resp.isSuccess() == false
             String msg = (resp == null) ? "Primary returned no response" : "Primary reported failure: " + resp.isSuccess();
