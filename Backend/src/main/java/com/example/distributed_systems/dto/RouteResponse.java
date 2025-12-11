@@ -6,7 +6,7 @@ public class RouteResponse {
     private String key;
     private WorkerInfo primary;
     private List<WorkerInfo> replicas;
-    // getters/setters/constructors
+
     public RouteResponse(String key, WorkerInfo primary, List<WorkerInfo> replicas) {
         this.key = key;
         this.primary = primary;

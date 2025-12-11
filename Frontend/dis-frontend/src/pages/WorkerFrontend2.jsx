@@ -1,10 +1,5 @@
 import React, { useState } from "react";
 
-// WorkerFrontend.jsx
-// Tailwind CSS only — no inline styles. Place this file in your React app (e.g. src/components/WorkerFrontend.jsx).
-// Ensure Tailwind is configured. Set API base via REACT_APP_API_BASE (e.g. "http://localhost:8081").
-
-
 export default function WorkerFrontend2() {
   const [status, setStatus] = useState(null);
   const [statusError, setStatusError] = useState(null);

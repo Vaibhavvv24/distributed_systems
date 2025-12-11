@@ -37,21 +37,17 @@ public class WorkerService {
     @Autowired
     private WorkerConfig workerConfig;  // contains info about other workers
 
-    // imports used:
-// import java.net.URLEncoder;
-// import java.nio.charset.StandardCharsets;
-// import java.util.List;
-// import java.util.concurrent.CompletableFuture;
+  
 
 public PutResponse put(String key, String value) {
-    // 1️⃣ Store locally (primary)
+  
     store.put(key, value);
     KVRecord record = new KVRecord(key, value);
     int successCount = 1; // local write counts
     StringBuilder log = new StringBuilder();
 
     try {
-        // 2️⃣ Ask controller for alive routing info (dynamic, not static config)
+      
         String controllerUrl = CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8);
         RouteResponse route = restTemplate.getForObject(controllerUrl, RouteResponse.class);
 
@@ -64,7 +60,7 @@ public PutResponse put(String key, String value) {
                 .filter(WorkerInfo::isAlive)
                 .toList();
 
-        // ✅ Replica 1 — synchronous
+        // Replica 1 — synchronous
         if (aliveReplicas.size() >= 1) {
             WorkerInfo replica1 = aliveReplicas.get(0);
             String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8);
@@ -88,7 +84,7 @@ public PutResponse put(String key, String value) {
             log.append("No replica1 available. ");
         }
 
-        // ✅ Replica 2 — asynchronous (after 5 s delay)
+        //  Replica 2 — asynchronous (after 5 s delay)
         // if (aliveReplicas.size() >= 2) {
         //     WorkerInfo replica2 = aliveReplicas.get(1);
         //     String encodedKey2 = URLEncoder.encode(key, StandardCharsets.UTF_8);
@@ -118,7 +114,7 @@ public PutResponse put(String key, String value) {
             restTemplate.put(replica2Url, record);
             System.out.println("🟡 Replica2 written (async after 5 s) → " + replica2.getId());
 
-            // ✅ Notify controller
+            // Notify controller
             String ackUrl = CONTROLLER_URL1 + "/replica/ack?key=" + encodedKey2 + "&replicaId=" + replica2.getId();
             restTemplate.postForObject(ackUrl, null, String.class);
 

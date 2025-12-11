@@ -1,13 +1,8 @@
 import React, { useState } from "react";
 
-// ControllerFrontend.jsx
-// Tailwind CSS only — no inline styles. Place this file in your React app (e.g. src/components/ControllerFrontend.jsx).
-// Ensure Tailwind is configured. Set API base via REACT_APP_API_BASE (e.g. "http://localhost:8080").
-
-// const API_BASE = process.env.REACT_APP_API_BASE || "";
 
 export default function ControllerFrontend() {
-  // Register worker
+  
   const [regId, setRegId] = useState("");
   const [regHost, setRegHost] = useState("");
   const [regPort, setRegPort] = useState("");
@@ -15,24 +10,23 @@ export default function ControllerFrontend() {
   const [regResult, setRegResult] = useState(null);
   const [regError, setRegError] = useState(null);
 
-  // Heartbeat
   const [hbId, setHbId] = useState("");
   const [hbLoading, setHbLoading] = useState(false);
   const [hbResult, setHbResult] = useState(null);
   const [hbError, setHbError] = useState(null);
 
-  // Key mapping
+  
   const [mapKey, setMapKey] = useState("");
   const [mapLoading, setMapLoading] = useState(false);
   const [mapResult, setMapResult] = useState(null);
   const [mapError, setMapError] = useState(null);
 
-  // Workers list
+  
   const [workersLoading, setWorkersLoading] = useState(false);
   const [workers, setWorkers] = useState(null);
   const [workersError, setWorkersError] = useState(null);
 
-  // Trigger rereplicate
+  
   const [rerepLoading, setRerepLoading] = useState(false);
   const [rerepResult, setRerepResult] = useState(null);
   const [rerepError, setRerepError] = useState(null);
@@ -290,12 +284,7 @@ export default function ControllerFrontend() {
           </section>
         </div>
 
-        {/* <footer className="mt-6 text-sm text-slate-500">
-          <ul className="list-disc ml-5 space-y-1">
-            <li>Set <code className="bg-slate-100 px-1 rounded">REACT_APP_API_BASE</code> to your Spring Boot base URL if different from the frontend origin.</li>
-            <li>Controller endpoints: <code className="bg-slate-100 px-1 rounded">/v1/controller/register</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/heartbeat</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/key-mapping/{"{key}"}</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/workers</code>, <code className="bg-slate-100 px-1 rounded">/v1/controller/trigger-rereplicate</code>.</li>
-          </ul>
-        </footer> */}
+      
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ public class ControllerService {
     private static final long HEARTBEAT_TIMEOUT_MS = 10000;
     private static final int REPLICATION_FACTOR = 3;
 
-    // ---------------- HEARTBEAT CHECKER ----------------
+
     @PostConstruct
     public void startHeartbeatChecker() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
@@ -51,7 +51,7 @@ public class ControllerService {
         }, 5, 5, TimeUnit.SECONDS);
     }
 
-    // ---------------- REGISTER WORKER ----------------
+
     public synchronized void registerWorker(String id, String host, int port) {
         if (workers.containsKey(id)) {
             WorkerInfo existing = workers.get(id);
@@ -67,7 +67,7 @@ public class ControllerService {
         System.out.println("✅ Worker registered/updated: " + id + " (" + host + ":" + port + ")");
     }
 
-    // ---------------- GET KEY MAPPING ----------------
+
     public RouteResponse getKeyMapping(String key) {
         if (workerList.isEmpty())
             throw new IllegalStateException("No workers available");
@@ -92,7 +92,7 @@ public class ControllerService {
         return route;
     }
 
-    // ---------------- HEARTBEAT UPDATE ----------------
+    
     public void updateHeartbeat(String workerId) {
         WorkerInfo worker = workers.get(workerId);
         if (worker != null) {
@@ -101,12 +101,11 @@ public class ControllerService {
         }
     }
 
-    // ---------------- LIST WORKERS ----------------
+
     public List<WorkerInfo> listWorkers() {
         return new ArrayList<>(workers.values());
     }
 
-    // ---------------- REPLICATION RECOVERY ----------------
     public synchronized void triggerReReplication(String deadWorkerId) {
         System.out.println("🚨 Triggering re-replication for dead worker: " + deadWorkerId);
 
@@ -127,7 +126,7 @@ public class ControllerService {
 
             if (!affected) continue;
 
-            // ✅ Find a live source that still has the key
+            // Find a live source that still has the key
             WorkerInfo source = null;
             List<WorkerInfo> currentHolders = new ArrayList<>();
             currentHolders.add(route.getPrimary());
@@ -144,7 +143,7 @@ public class ControllerService {
                 continue;
             }
 
-            // ✅ Find a live target that doesn’t have the key
+            // Find a live target that doesn’t have the key
             WorkerInfo target = aliveWorkers.stream()
                     .filter(w -> !currentHolders.contains(w))
                     .findFirst()
@@ -154,7 +153,7 @@ public class ControllerService {
                 continue;
             }
 
-            // ✅ Fetch value from source and replicate to target
+            // Fetch value from source and replicate to target
             try {
                 String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8);
               String getUrl = "http://" + source.getHost() + ":" + source.getPort() + "/v1/worker/get?key=" + encodedKey;
@@ -171,7 +170,7 @@ public class ControllerService {
                             key, source.getId(), target.getId());
                 }
 
-                // ✅ Update mapping: replace dead worker with target
+                // Update mapping: replace dead worker with target
                 WorkerInfo newPrimary = route.getPrimary();
                 List<WorkerInfo> newReplicas = new ArrayList<>(route.getReplicas());
                 if (route.getPrimary().getId().equals(deadWorkerId)) {

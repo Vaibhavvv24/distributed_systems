@@ -12,7 +12,7 @@ export default function Client() {
   const [getLoading, setGetLoading] = useState(false);
   const [getError, setGetError] = useState(null);
 
-  // 🆕 for /v1/client/getVal
+  
   const [workerKey, setWorkerKey] = useState("");
   const [workerId, setWorkerId] = useState("");
   const [workerHost, setWorkerHost] = useState("");
@@ -21,9 +21,7 @@ export default function Client() {
   const [workerError, setWorkerError] = useState(null);
   const [workerLoading, setWorkerLoading] = useState(false);
 
-  // -----------------------------------
-  // PUT handler
-  // -----------------------------------
+
   async function handlePut(e) {
     e.preventDefault();
     setPutLoading(true);
@@ -57,9 +55,6 @@ export default function Client() {
     }
   }
 
-  // -----------------------------------
-  // GET handler (via controller)
-  // -----------------------------------
   async function handleGet(e) {
     e.preventDefault();
     setGetLoading(true);
@@ -93,9 +88,7 @@ export default function Client() {
     }
   }
 
-  // -----------------------------------
-  // 🆕 Direct Worker GET handler (/v1/client/getVal)
-  // -----------------------------------
+
   async function handleWorkerGet(e) {
     e.preventDefault();
     setWorkerLoading(true);
@@ -135,9 +128,7 @@ export default function Client() {
     }
   }
 
-  // -----------------------------------
-  // UI Rendering
-  // -----------------------------------
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white py-10">
       <div className="max-w-5xl mx-auto px-4">
@@ -150,7 +141,6 @@ export default function Client() {
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* PUT card */}
           <section className="bg-white rounded-2xl shadow-md p-10">
             <h2 className="text-lg font-semibold text-slate-800">PUT (store)</h2>
             <form onSubmit={handlePut} className="mt-4 space-y-4">
@@ -183,7 +173,6 @@ export default function Client() {
             </form>
           </section>
 
-          {/* GET card (controller) */}
           <section className="bg-white rounded-2xl shadow-md p-6">
             <h2 className="text-lg font-semibold text-slate-800">GET Primary Worker Info</h2>
             <form onSubmit={handleGet} className="mt-4 space-y-4">
@@ -209,7 +198,6 @@ export default function Client() {
             </form>
           </section>
 
-          {/* 🆕 Direct GET from Worker */}
           <section className="bg-white rounded-2xl shadow-md p-6 md:col-span-2">
             <h2 className="text-lg font-semibold text-slate-800">
               GET from Primary Worker 

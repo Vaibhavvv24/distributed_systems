@@ -20,20 +20,10 @@ public class ClientService {
 
     private final String CONTROLLER_URL = "http://localhost:8085/v1/controller/key-mapping";
 
-    /**
-     * Perform PUT operation:
-     * 1. Query controller to get worker mapping.
-     * 2. Write synchronously to 2 replicas.
-     * 3. Write asynchronously to the 3rd replica.
-     */
-  // imports used:
-// import java.net.URLEncoder;
-// import java.nio.charset.StandardCharsets;
-// import java.util.List;
-
+ 
 public ClientPutResponse put(String key, String value) {
 
-    // 1) Query controller to get primary + replicas
+
     RouteResponse mapping = restTemplate.getForObject(
         CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
         RouteResponse.class
@@ -45,34 +35,28 @@ public ClientPutResponse put(String key, String value) {
 
     WorkerInfo primary = mapping.getPrimary();
 
-    // 2) Call only the primary. Primary will replicate to two other workers (sync + async).
     try {
         String primaryUrl = "http://" + primary.getHost() + ":" + primary.getPort() + "/v1/worker/put";
         PutRequest req = new PutRequest();
         req.setKey(key);
         req.setValue(value);
 
-        // primary returns PutResponse(success) indicating whether it achieved local + one replica write
+       
         PutResponse resp = restTemplate.postForObject(primaryUrl, req, PutResponse.class);
         if (resp != null && resp.isSuccess()) {
             return new ClientPutResponse(true, "Data written successfully");
         } else {
-            // resp == null OR resp.isSuccess() == false
+ 
             String msg = (resp == null) ? "Primary returned no response" : "Primary reported failure: " + resp.isSuccess();
             return new ClientPutResponse(false, "Write failed: " + msg);
         }
     } catch (Exception e) {
-        // Primary unreachable or other client error
+
         return new ClientPutResponse(false, "Primary unavailable: " + e.getMessage());
     }
 }
 
 
-    /**
-     * Perform GET operation:
-     * 1. Query controller to get mapping.
-     * 2. Read from primary replica.
-     */
 //    public ClientGetResponse get(String key) {
 //     RouteResponse mapping = restTemplate.getForObject(
 //         CONTROLLER_URL + "/" + URLEncoder.encode(key, StandardCharsets.UTF_8),
